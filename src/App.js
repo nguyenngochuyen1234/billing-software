@@ -1,25 +1,28 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import { useState, createContext } from 'react'
+import SettingPage from './SettingPage'
+import MainPage from './MainPage'
+import { AppProvider } from './AppContext'
+const App = () => {
 
-function App() {
+
+
+  const [settingData, setSettingData] = useState({
+    tuitionFee: '',
+    universityGraduation: '',
+    master: '',
+    doctorate: '',
+    associateProfessor: '',
+    professor: '',
+  })
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <AppProvider>
+        <SettingPage setSettingData={setSettingData} />
+        <MainPage settingData={settingData} />
+      </AppProvider>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
