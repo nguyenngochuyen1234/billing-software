@@ -13,7 +13,6 @@ import { AppContext } from './AppContext';
 
 const DialogEdit = ({ dialogEditOpen, setDialogEditOpen, rowEdit }) => {
     const { editAndSaveDataTable } = useContext(AppContext)
-    console.log({rowEdit})
     const [rowData, setRowData] = useState(rowEdit)
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));

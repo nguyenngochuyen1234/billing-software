@@ -176,7 +176,7 @@ const MainPage = ({ settingData }) => {
 
     return (
         <div className='main-page'>
-            <h2 style={{marrrginBottom:20}}>Phần mềm tính lương của Đại học Thăng Long</h2>
+            <h2 style={{marginBottom:"10px"}}>Phần mềm tính lương của Đại học Thăng Long</h2>
             <Box
                 component="form"
                 sx={{

@@ -7,7 +7,6 @@ import DialogEdit from './DialogEdit';
 import { AppContext } from './AppContext';
 const TableData = ({ rowsData, settingDataConfig }) => {
     const {coeffTeacherSaved} = useContext(AppContext)
-    console.log({coeffTeacherSaved})
     const [rowDelete, setRowDelete] = useState([])
     const [rowEdit, setRowEdit] = useState([])
     const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false)
@@ -66,7 +65,6 @@ const deleteRowHandle = (data) => {
     setDialogDeleteOpen(true)
 }
 const editRowHandle = (data) => {
-    console.log({ data })
     setRowEdit(data)
     setDialogEditOpen(true)
 }

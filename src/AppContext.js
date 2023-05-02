@@ -48,11 +48,6 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         let total = 0
         rowsData.forEach(item => {
-            console.log(item.numberLesson)
-            console.log(coeffTeacherSaved)
-            console.log(item.coefficientClass)
-            console.log(item.coefficientLesson)
-            console.log(tuitionFee)
             total += parseFloat(item.numberLesson) * (parseFloat(coeffTeacherSaved) + parseFloat(item.coefficientClass) + parseFloat(item.coefficientLesson)) * parseFloat(tuitionFee)
         })
         setTotalCost(total)
