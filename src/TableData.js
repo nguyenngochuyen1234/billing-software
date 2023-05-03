@@ -39,8 +39,9 @@ const TableData = ({ rowsData, settingDataConfig }) => {
             renderCell: (params) => {
                 let rowData = params.row
                 let tuitionFee = settingDataConfig.tuitionFee
+                let totalRow = parseFloat(rowData.numberLesson) * (parseFloat(coeffTeacherSaved) + parseFloat(rowData.coefficientClass) + parseFloat(rowData.coefficientLesson)) * parseFloat(tuitionFee)
             return(
-                    <> { parseFloat(rowData.numberLesson) * (parseFloat(coeffTeacherSaved) + parseFloat(rowData.coefficientClass) + parseFloat(rowData.coefficientLesson)) * parseFloat(tuitionFee)}</>
+                    <> { totalRow.toFixed(2)}</>
                 )
             }
         },

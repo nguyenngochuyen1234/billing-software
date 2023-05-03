@@ -30,6 +30,7 @@ export const AppProvider = ({ children }) => {
             if(dt.id == editRow.id) return editRow
             else return dt
         })
+        getTotalCost(dataEdited)
         localStorage.setItem('dataTable', JSON.stringify(dataEdited))
         setRowsData(dataEdited)
     }
@@ -40,17 +41,17 @@ export const AppProvider = ({ children }) => {
     const getTotalCost = (data) =>{
         let total = 0
         data.forEach(dtRow=>{
-            let totalRow = parseFloat(dtRow.numberLesson) * (parseFloat(dtRow.coefficientTeacher) + parseFloat(dtRow.coefficientClass) + parseFloat(dtRow.coefficientLesson)) * parseFloat(tuitionFee)
+            let totalRow = parseFloat(dtRow.numberLesson) * (parseFloat(coeffTeacherSaved) + parseFloat(dtRow.coefficientClass) + parseFloat(dtRow.coefficientLesson)) * parseFloat(tuitionFee)
             total+=totalRow
         })
-        setTotalCost(total)
+        setTotalCost(total.toFixed(2))
     }
     useEffect(() => {
         let total = 0
         rowsData.forEach(item => {
             total += parseFloat(item.numberLesson) * (parseFloat(coeffTeacherSaved) + parseFloat(item.coefficientClass) + parseFloat(item.coefficientLesson)) * parseFloat(tuitionFee)
         })
-        setTotalCost(total)
+        setTotalCost(total.toFixed(2))
     }, [rowsData, coeffTeacherSaved, tuitionFee])
     const value = {
         rowsData,
