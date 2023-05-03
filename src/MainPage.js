@@ -9,7 +9,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { AppContext } from './AppContext';
 const MainPage = ({ settingData }) => {
     const { rowsData,
-        changeAndSaveDataTable, totalCost, setTotalCost, setCoeffTeacherSaved,tuitionFee, setTuitionFee } = useContext(AppContext)
+        changeAndSaveDataTable, totalCost, setCoeffTeacherSaved,tuitionFee, setTuitionFee } = useContext(AppContext)
     const [coefficientTeacher, setCoefficientTeacher] = useState(0)
     const [coefficientClass, setCoefficientClass] = useState(0)
     const [coefficientTeacherArr, setCoefficientTeacherArr] = useState([])
@@ -171,6 +171,7 @@ const MainPage = ({ settingData }) => {
                 coefficientLesson: '',
                 numberLesson: ''
             })
+            setCoefficientClass(0)
         }
     }
 

@@ -96,24 +96,15 @@ const DialogEdit = ({ dialogEditOpen, setDialogEditOpen, rowEdit }) => {
                                 name="numberLesson"
                                 value={rowData?.numberLesson || ''}
                             />
-                            <TextField
-                                onChange={handleInputChange}
-
-                                id="standard-read-only-input"
-                                label="Tiền dạy"
-                                variant="filled"
-                                name="tuitionFee"
-                                value={rowData?.tuitionFee || ''}
-                            />
                         </div>
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button autoFocus onClick={handleClose}>
-                        Disagree
-                    </Button>
                     <Button onClick={handleSubmit} autoFocus>
-                        Agree
+                        Thay đổi
+                    </Button>
+                    <Button autoFocus onClick={handleClose}>
+                        Thoát
                     </Button>
                 </DialogActions>
             </Dialog>

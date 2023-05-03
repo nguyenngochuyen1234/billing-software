@@ -88,25 +88,15 @@ const DialogDelete = ({ dialogDeleteOpen, setDialogDeleteOpen, rowDelete }) => {
                                 variant="filled"
                                 value={rowDelete?.numberLesson || ''}
                             />
-                            <TextField
-                                focused
-                                id="standard-read-only-input"
-                                label="Tiền dạy"
-                                InputProps={{
-                                    readOnly: true,
-                                }}
-                                variant="filled"
-                                value={rowDelete?.tuitionFee || ''}
-                            />
                         </div>
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button autoFocus onClick={()=>{setDialogDeleteOpen(false)}}>
-                        Disagree
-                    </Button>
                     <Button onClick={handleDelete} autoFocus>
-                        Agree
+                    Xóa
+                    </Button>
+                    <Button autoFocus onClick={()=>{setDialogDeleteOpen(false)}}>
+                        Thoát 
                     </Button>
                 </DialogActions>
             </Dialog>
