@@ -1,48 +1,61 @@
 import { createContext, useEffect, useState } from "react";
-
+import { setDocument, updateDocument, getDocument } from "./firebase/api";
 export const AppContext = createContext({})
 
 export const AppProvider = ({ children }) => {
+    const idTeacher = localStorage.getItem('idTeacher')
     const [rowsData, setRowsData] = useState([]);
     const [totalCost, setTotalCost] = useState(0)
     const [tuitionFee, setTuitionFee] = useState(0)
     const [coeffTeacherSaved, setCoeffTeacherSaved] = useState(0)
-    useEffect(() => {
-        let initialFormTableData = JSON.parse(localStorage.getItem('dataTable'))
-        if (initialFormTableData) {
-            setRowsData(initialFormTableData)
-        }
+    const fetchTableData = async () => {
+        try {
+            if (idTeacher) {
+                let initialFormTableData = await getDocument('dataTable', idTeacher)
+                if (initialFormTableData) {
+                    setRowsData(initialFormTableData.data)
+                }
+            }
 
-    }, [])
-    const changeAndSaveDataTable = (newValue) => {
-        localStorage.setItem('dataTable', JSON.stringify([...rowsData, newValue]))
-        setRowsData(prev => [...prev, newValue])
+        } catch (err) {
+            console.log(err.message)
+        }
     }
-    const deleteAndSaveDataTable = (idDel) => {
+    useEffect(() => {
+        fetchTableData()
+    }, [])
+    const changeAndSaveDataTable = async (newValue) => {
+        if (idTeacher) {
+            await setDocument('dataTable', idTeacher, { data: [...rowsData, newValue] })
+        }
+        setRowsData(prev => [...prev, newValue])
+
+    }
+    const deleteAndSaveDataTable = async (idDel) => {
         const copyRowsData = [...rowsData]
         let newTableData = copyRowsData.filter(row => row.id !== idDel)
         let dataChangedId = changeIdData(newTableData)
-        localStorage.setItem('dataTable', JSON.stringify(dataChangedId))
+        await updateDocument('dataTable', idTeacher, { data: dataChangedId })
         setRowsData(dataChangedId)
     }
-    const editAndSaveDataTable = (editRow) => {
-        let dataEdited = rowsData.map(dt=>{
-            if(dt.id == editRow.id) return editRow
+    const editAndSaveDataTable = async (editRow) => {
+        let dataEdited = rowsData.map(dt => {
+            if (dt.id == editRow.id) return editRow
             else return dt
         })
         getTotalCost(dataEdited)
-        localStorage.setItem('dataTable', JSON.stringify(dataEdited))
+        await updateDocument('dataTable', idTeacher, { data: dataEdited })
         setRowsData(dataEdited)
     }
     const changeIdData = (data) => {
         let newData = data.map((dt, idx) => { return { ...dt, id: idx + 1 } })
         return newData
     }
-    const getTotalCost = (data) =>{
+    const getTotalCost = (data) => {
         let total = 0
-        data.forEach(dtRow=>{
+        data.forEach(dtRow => {
             let totalRow = parseFloat(dtRow.numberLesson) * (parseFloat(coeffTeacherSaved) + parseFloat(dtRow.coefficientClass) + parseFloat(dtRow.coefficientLesson)) * parseFloat(tuitionFee)
-            total+=totalRow
+            total += totalRow
         })
         setTotalCost(total.toFixed(2))
     }
@@ -58,7 +71,7 @@ export const AppProvider = ({ children }) => {
         changeAndSaveDataTable,
         deleteAndSaveDataTable,
         editAndSaveDataTable,
-        totalCost, 
+        totalCost,
         setTotalCost,
         coeffTeacherSaved, setCoeffTeacherSaved,
         tuitionFee, setTuitionFee

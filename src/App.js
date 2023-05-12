@@ -1,12 +1,9 @@
 import React from 'react'
-import { useState, createContext } from 'react'
+import { useState } from 'react'
 import SettingPage from './SettingPage'
 import MainPage from './MainPage'
 import { AppProvider } from './AppContext'
 const App = () => {
-
-
-
   const [settingData, setSettingData] = useState({
     tuitionFee: '',
     universityGraduation: '',

@@ -7,9 +7,18 @@ import Box from '@mui/material/Box';
 import TableData from './TableData'
 import InputAdornment from '@mui/material/InputAdornment';
 import { AppContext } from './AppContext';
+import LoadingButton from '@mui/lab/LoadingButton';
+import AlertMessage from './AlertMessage';
+import { addDocument, getDocument, setDocument, updateDocument } from './firebase/api'
 const MainPage = ({ settingData }) => {
+    const idTeacher = localStorage.getItem('idTeacher')
     const { rowsData,
-        changeAndSaveDataTable, totalCost, setCoeffTeacherSaved,tuitionFee, setTuitionFee } = useContext(AppContext)
+        changeAndSaveDataTable, totalCost, setCoeffTeacherSaved, setTuitionFee } = useContext(AppContext)
+    const [alertData, setAlertData] = useState({
+        severity: '',
+        message: '',
+        open: false
+    })
     const [coefficientTeacher, setCoefficientTeacher] = useState(0)
     const [coefficientClass, setCoefficientClass] = useState(0)
     const [coefficientTeacherArr, setCoefficientTeacherArr] = useState([])
@@ -19,54 +28,63 @@ const MainPage = ({ settingData }) => {
         degree: 'universityGraduation'
     })
     const [settingDataConfig, setSettingDataConfig] = useState(settingData)
-
-    useEffect(()=>{
+    const [loadingBtnTeacher, setloadingBtnTeacher] = useState(false)
+    const [loadingBtnClass, setloadingBtnClass] = useState(false)
+    useEffect(() => {
         setTuitionFee(settingDataConfig.tuitionFee)
         setCoefficientTeacherArr([
-        {
-            value: 'universityGraduation',
-            coefficient: settingDataConfig.universityGraduation
-        },
-        {
-            value: 'master',
-            coefficient: settingDataConfig.master
-        },
-        {
-            value: 'doctorate',
-            coefficient: settingDataConfig.doctorate
-        },
-        {
-            value: 'associateProfessor',
-            coefficient: settingDataConfig.associateProfessor
-        },
-        {
-            value: 'professor',
-            coefficient: settingDataConfig.professor
-        },
-    ])
-    },[settingDataConfig])
-
-    useEffect(() => {
-        let initialTeacherData = JSON.parse(localStorage.getItem('teacherInfo'))
-        if (initialTeacherData) {
-            setTeacherInfo(initialTeacherData)
-            setSavedTeacherInfo({
-                nameTeacher: initialTeacherData.nameTeacher,
-                teacherCode: initialTeacherData.teacherCode,
-            })
-            coefficientTeacherArr.forEach(item => {
-                if (item.value == initialTeacherData.degree) {
-                    setCoeffTeacherSaved(item.coefficient)
-                    setCoefficientTeacher(item.coefficient)
+            {
+                value: 'universityGraduation',
+                coefficient: settingDataConfig.universityGraduation
+            },
+            {
+                value: 'master',
+                coefficient: settingDataConfig.master
+            },
+            {
+                value: 'doctorate',
+                coefficient: settingDataConfig.doctorate
+            },
+            {
+                value: 'associateProfessor',
+                coefficient: settingDataConfig.associateProfessor
+            },
+            {
+                value: 'professor',
+                coefficient: settingDataConfig.professor
+            },
+        ])
+    }, [settingDataConfig])
+    const fetchTeacherInfo = async () => {
+        try {
+            if (idTeacher) {
+                let initialTeacherData = await getDocument('teacherInfo', idTeacher)
+                if (initialTeacherData) {
+                    setTeacherInfo(initialTeacherData)
+                    setSavedTeacherInfo({
+                        nameTeacher: initialTeacherData.nameTeacher,
+                        teacherCode: initialTeacherData.teacherCode,
+                    })
+                    coefficientTeacherArr.forEach(item => {
+                        if (item.value == initialTeacherData.degree) {
+                            setCoeffTeacherSaved(item.coefficient)
+                            setCoefficientTeacher(item.coefficient)
+                        }
+                    })
                 }
-            })
+
+            }
+        } catch (error) {
+            console.log(error.message)
         }
+    }
+    useEffect(() => {
+        fetchTeacherInfo()
     }, [coefficientTeacherArr])
     useEffect(() => {
-        let initialFormSettingData = JSON.parse(localStorage.getItem('settingData'))
-        if (initialFormSettingData) {
-            setSettingDataConfig(initialFormSettingData)
-            setCoefficientTeacher(initialFormSettingData.universityGraduation)
+        if (settingData) {
+            setSettingDataConfig(settingData)
+            setCoefficientTeacher(settingData.universityGraduation)
         }
     }, [settingData])
 
@@ -132,52 +150,100 @@ const MainPage = ({ settingData }) => {
         }
 
     };
-    const handleTeacherSubmit = (event) => {
-        event.preventDefault();
-        const { nameTeacher, teacherCode } = teacherInfo
-        if (nameTeacher == '' || teacherCode == '') {
-            alert('Vui lòng nhập đầy đủ thông tin')
-        } else {
-            setSavedTeacherInfo({
-                nameTeacher,
-                teacherCode,
-            })
-            setCoeffTeacherSaved(coefficientTeacher)
-            localStorage.setItem("teacherInfo", JSON.stringify(teacherInfo))
+    const handleTeacherSubmit = async (event) => {
+        try {
+            event.preventDefault();
+            setloadingBtnTeacher(true)
+            const { nameTeacher, teacherCode } = teacherInfo
+            if (nameTeacher == '' || teacherCode == '') {
+                setAlertData({
+                    severity: 'warning',
+                    message: 'Vui lòng nhập đầy đủ thông tin',
+                    open: true
+                })
+            } else {
+                if (idTeacher) {
+                    await updateDocument('teacherInfo', idTeacher, teacherInfo)
+                } else {
+                    let id = await addDocument('teacherInfo', teacherInfo)
+                    await setDocument('settingDataConfig', id, settingDataConfig)
+                    localStorage.setItem('idTeacher', id)
+                }
+                setAlertData({
+                    severity: 'success',
+                    message: 'Lưu thành công',
+                    open: true
+                })
+                setSavedTeacherInfo({
+                    nameTeacher,
+                    teacherCode,
+                })
+                setCoeffTeacherSaved(coefficientTeacher)
+
+            }
+            setloadingBtnTeacher(false)
+
+        } catch (error) {
+            setloadingBtnTeacher(false)
+            console.log(error.message)
         }
     }
-    const handleClassSubmit = (event) => {
-        event.preventDefault();
-        const { nameClass, numberStudent, coefficientLesson, numberLesson } = classInfo
-        if (nameClass === '' || numberStudent === '' || coefficientLesson === '' || numberLesson === '') {
-            alert('Vui lòng nhập đầy đủ thông tin')
-        } else {
-            let tuitionFeeClass = parseFloat(numberLesson) * (parseFloat(coefficientTeacher) + parseFloat(coefficientClass) + parseFloat(coefficientLesson)) * parseFloat(settingDataConfig.tuitionFee)
-            let newRow = {
-                id: rowsData.length + 1,
-                nameClass,
-                numberStudent,
-                coefficientLesson,
-                numberLesson,
-                tuitionFee: tuitionFeeClass || 0,
-                coefficientTeacher,
-                coefficientClass,
-                tuitionFee: settingDataConfig.tuitionFee
+    const handleClassSubmit = async () => {
+        try {
+            setloadingBtnClass(true)
+            const { nameClass, numberStudent, coefficientLesson, numberLesson } = classInfo
+            if (nameClass === '' || numberStudent === '' || coefficientLesson === '' || numberLesson === '') {
+                alert('Vui lòng nhập đầy đủ thông tin')
+            } else if (!idTeacher) {
+                setloadingBtnClass(false)
+                setAlertData({
+                    severity: 'warning',
+                    message: 'Vui lòng lưu thông tin giáo viên trước',
+                    open: true
+                })
+            } else if (numberStudent < 0 || coefficientLesson < 0 || numberLesson < 0) {
+                setloadingBtnClass(false)
+                setAlertData({
+                    severity: 'warning',
+                    message: 'Vui lòng lưu không nhập số âm',
+                    open: true
+                })
             }
-            changeAndSaveDataTable(newRow)
-            setClassInfo({
-                nameClass: '',
-                numberStudent: '',
-                coefficientLesson: '',
-                numberLesson: ''
-            })
-            setCoefficientClass(0)
+            else {
+                let tuitionFeeClass = parseFloat(numberLesson) * (parseFloat(coefficientTeacher) + parseFloat(coefficientClass) +
+                    parseFloat(coefficientLesson)) * parseFloat(settingDataConfig.tuitionFee)
+                let newRow = {
+                    id: rowsData.length + 1,
+                    nameClass,
+                    numberStudent,
+                    coefficientLesson,
+                    numberLesson,
+                    tuitionFee: tuitionFeeClass || 0,
+                    coefficientTeacher,
+                    coefficientClass,
+                    tuitionFee: settingDataConfig.tuitionFee
+                }
+                await changeAndSaveDataTable(newRow)
+                setClassInfo({
+                    nameClass: '',
+                    numberStudent: '',
+                    coefficientLesson: '',
+                    numberLesson: ''
+                })
+                setCoefficientClass(0)
+                setloadingBtnClass(false)
+            }
+        } catch (err) {
+            setloadingBtnClass(false)
+            console.log(err.message)
         }
+
     }
 
     return (
         <div className='main-page'>
-            <h2 style={{marginBottom:"10px"}}>Phần mềm tính lương của Đại học Thăng Long</h2>
+            <AlertMessage alertData={alertData} />
+            <h2 style={{ marginBottom: "10px" }}>Phần mềm tính lương của Đại học Thăng Long</h2>
             <Box
                 component="form"
                 sx={{
@@ -232,7 +298,15 @@ const MainPage = ({ settingData }) => {
                         readOnly: true,
                     }}
                 />
-                <Button className="btnSave" onClick={handleTeacherSubmit} variant="text">Lưu</Button>
+                <LoadingButton
+                    className="btnSave"
+                    onClick={handleTeacherSubmit}
+                    loading={loadingBtnTeacher}
+                    loadingIndicator="Loading…"
+                    variant="text"
+                >
+                    <span>Thay đổi</span>
+                </LoadingButton>
             </Box>
             <Box
                 component="form"
@@ -298,8 +372,15 @@ const MainPage = ({ settingData }) => {
                     value={classInfo.numberLesson}
                     onChange={handleClassInputChange}
                 />
-
-                <Button className="btnSave" onClick={handleClassSubmit} variant="text">Thêm</Button>
+                <LoadingButton
+                    className="btnSave"
+                    onClick={handleClassSubmit}
+                    loading={loadingBtnClass}
+                    loadingIndicator="Loading…"
+                    variant="text"
+                >
+                    <span>Thêm</span>
+                </LoadingButton>
 
             </Box>
             <h3 style={{ margin: '10px 0' }}>Bảng tính lương của giáo viên</h3>

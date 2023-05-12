@@ -6,7 +6,7 @@ import DialogDelete from './DialogDelete';
 import DialogEdit from './DialogEdit';
 import { AppContext } from './AppContext';
 const TableData = ({ rowsData, settingDataConfig }) => {
-    const {coeffTeacherSaved} = useContext(AppContext)
+    const { coeffTeacherSaved } = useContext(AppContext)
     const [rowDelete, setRowDelete] = useState([])
     const [rowEdit, setRowEdit] = useState([])
     const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false)
@@ -40,61 +40,61 @@ const TableData = ({ rowsData, settingDataConfig }) => {
                 let rowData = params.row
                 let tuitionFee = settingDataConfig.tuitionFee
                 let totalRow = parseFloat(rowData.numberLesson) * (parseFloat(coeffTeacherSaved) + parseFloat(rowData.coefficientClass) + parseFloat(rowData.coefficientLesson)) * parseFloat(tuitionFee)
-            return(
-                    <> { totalRow.toFixed(2)}</>
+                return (
+                    <> {totalRow.toFixed(2)}</>
                 )
             }
         },
-{
-    field: 'feature',
-        headerName: 'Tính năng',
+        {
+            field: 'feature',
+            headerName: 'Tính năng',
             sortable: false,
-                width: 200,
-                    align: 'center',
-                        headerClassName: 'aggregationColumnHeader--alignCenter',
-                            renderCell: (params) => (
-                                <div>
-                                    <DeleteIcon style={{ margin: '0 10px', cursor: 'pointer' }} onClick={() => { deleteRowHandle(params.row) }} color="error" />
-                                    <EditIcon style={{ margin: '0 10px', cursor: 'pointer' }} onClick={() => { editRowHandle(params.row) }} color="primary" />
-                                </div>
+            width: 200,
+            align: 'center',
+            headerClassName: 'aggregationColumnHeader--alignCenter',
+            renderCell: (params) => (
+                <div>
+                    <DeleteIcon style={{ margin: '0 10px', cursor: 'pointer' }} onClick={() => { deleteRowHandle(params.row) }} color="error" />
+                    <EditIcon style={{ margin: '0 10px', cursor: 'pointer' }} onClick={() => { editRowHandle(params.row) }} color="primary" />
+                </div>
 
-                            ),
+            ),
         },
     ];
-const deleteRowHandle = (data) => {
-    setRowDelete(data)
-    setDialogDeleteOpen(true)
-}
-const editRowHandle = (data) => {
-    setRowEdit(data)
-    setDialogEditOpen(true)
-}
-return (
-    <>
-        <div style={{ height: 350, width: '100%' }}>
-            <DataGrid
-                rows={rowsData}
-                columns={columns}
-                getRowId={(row) => row.id}
-                disableColumnFilter={true}
-                disableColumnMenu={true}
-                hideFooter={true}
+    const deleteRowHandle = (data) => {
+        setRowDelete(data)
+        setDialogDeleteOpen(true)
+    }
+    const editRowHandle = (data) => {
+        setRowEdit(data)
+        setDialogEditOpen(true)
+    }
+    return (
+        <>
+            <div style={{ height: 350, width: '100%' }}>
+                <DataGrid
+                    rows={rowsData}
+                    columns={columns}
+                    getRowId={(row) => row.id}
+                    disableColumnFilter={true}
+                    disableColumnMenu={true}
+                    hideFooter={true}
+                />
+            </div>
+            <DialogDelete
+                dialogDeleteOpen={dialogDeleteOpen}
+                setDialogDeleteOpen={setDialogDeleteOpen}
+                rowDelete={rowDelete}
             />
-        </div>
-        <DialogDelete
-            dialogDeleteOpen={dialogDeleteOpen}
-            setDialogDeleteOpen={setDialogDeleteOpen}
-            rowDelete={rowDelete}
-        />
-        <DialogEdit
-            dialogEditOpen={dialogEditOpen}
-            setDialogEditOpen={setDialogEditOpen}
-            rowEdit={rowEdit}
+            <DialogEdit
+                dialogEditOpen={dialogEditOpen}
+                setDialogEditOpen={setDialogEditOpen}
+                rowEdit={rowEdit}
 
-        />
-    </>
+            />
+        </>
 
-)
+    )
 }
 
 export default TableData

@@ -10,25 +10,43 @@ import DialogTitle from '@mui/material/DialogTitle';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { AppContext } from './AppContext';
+import LoadingButton from '@mui/lab/LoadingButton';
+import AlertMessage from './AlertMessage';
 const DialogDelete = ({ dialogDeleteOpen, setDialogDeleteOpen, rowDelete }) => {
-    const {deleteAndSaveDataTable} = useContext(AppContext)
+    const [alertData, setAlertData] = useState({
+        severity: '',
+        message: '',
+        open: false
+    })
+    const { deleteAndSaveDataTable } = useContext(AppContext)
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-
-    const handleClickOpen = () => {
-        setDialogDeleteOpen(true);
-    };
+    const [loadingBtn, setloadingBtn] = useState(false)
     const handleClose = () => {
         setDialogDeleteOpen(false);
     };
-    
-    const handleDelete = () => {
-        deleteAndSaveDataTable(rowDelete.id || -1)
-        setDialogDeleteOpen(false);
+
+    const handleDelete = async () => {
+        try {
+            setloadingBtn(true)
+            await deleteAndSaveDataTable(rowDelete.id || -1)
+            setloadingBtn(false)
+            setDialogDeleteOpen(false);
+            setAlertData({
+                severity: 'success',
+                message: 'Xóa thành công',
+                open: true
+            })
+        } catch (err) {
+            setloadingBtn(false)
+            setDialogDeleteOpen(false);
+            console.log(err)
+        }
     };
 
     return (
         <div>
+            <AlertMessage alertData={alertData} />
             <Dialog
                 fullScreen={fullScreen}
                 open={dialogDeleteOpen}
@@ -92,11 +110,17 @@ const DialogDelete = ({ dialogDeleteOpen, setDialogDeleteOpen, rowDelete }) => {
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleDelete} autoFocus>
-                    Xóa
-                    </Button>
-                    <Button autoFocus onClick={()=>{setDialogDeleteOpen(false)}}>
-                        Thoát 
+                    <LoadingButton
+                        className="btnSave"
+                        onClick={handleDelete}
+                        loading={loadingBtn}
+                        loadingIndicator="Loading…"
+                        variant="text"
+                    >
+                        <span>Xóa</span>
+                    </LoadingButton>
+                    <Button autoFocus onClick={() => { setDialogDeleteOpen(false) }}>
+                        Thoát
                     </Button>
                 </DialogActions>
             </Dialog>

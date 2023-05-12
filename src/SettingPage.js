@@ -1,17 +1,28 @@
 import React, { useEffect } from 'react'
 import { useState } from 'react';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import Backdrop from '@mui/material/Backdrop';
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import InputAdornment from '@mui/material/InputAdornment';
 import DialogTitle from '@mui/material/DialogTitle';
+import { getDocument, setDocument, updateDocument } from './firebase/api'
+import AlertMessage from './AlertMessage';
+import CircularProgress from '@mui/material/CircularProgress';
 const SettingPage = ({ setSettingData }) => {
-    
+    const idTeacher = localStorage.getItem('idTeacher')
+    const [alertData, setAlertData] = useState({
+        severity: '',
+        message: '',
+        open: false
+    })
     const [open, setOpen] = useState(true);
-    const [archivedData, setArchivedData] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [loadingBtn, setLoadingBtn] = useState(false)
     const [formData, setFormData] = useState({
         tuitionFee: '',
         universityGraduation: '',
@@ -20,28 +31,75 @@ const SettingPage = ({ setSettingData }) => {
         associateProfessor: '',
         professor: '',
     });
-    useEffect(() => {
-        let initialFormData = JSON.parse(localStorage.getItem('settingData'))
-        if (initialFormData) {
-            setFormData(initialFormData)
-            setSettingData(initialFormData)
-            setArchivedData(true)
+
+    const getSettingData = async () => {
+        try {
+            setLoading(true)
+            if (idTeacher) {
+                let initialFormData = await getDocument('settingDataConfig', idTeacher)
+                if (initialFormData) {
+                    setFormData(initialFormData)
+                    setSettingData(initialFormData)
+                }
+            }
+            setLoading(false)
+        } catch (err) {
+            setLoading(false)
+            console.log(err)
         }
+    }
+    useEffect(() => {
+        getSettingData()
     }, [])
     const handleInputChange = (event) => {
         const { name, value } = event.target;
         setFormData((prevData) => ({ ...prevData, [name]: value }));
     };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const { tuitionFee, universityGraduation, master, doctorate, associateProfessor, professor } = formData
-        if (tuitionFee === '' || universityGraduation === '' || master === '' || doctorate === '' || associateProfessor === '' || professor === '') {
-            alert('Vui lòng nhập lại')
-        } else {
-            localStorage.setItem('settingData', JSON.stringify(formData))
-            setSettingData(formData);
+    const handleSubmit = async () => {
+        try {
+            setLoadingBtn(true)
+            const { tuitionFee, universityGraduation, master, doctorate, associateProfessor, professor } = formData
+            if (tuitionFee === '' || universityGraduation === '' || master === '' || doctorate === '' || 
+            associateProfessor === '' || professor === '') {
+                setLoadingBtn(false)
+                setAlertData({
+                    severity: 'warning',
+                    message: 'Vui lòng nhập đầy đủ thông tin',
+                    open: true
+                })
+            } else if (tuitionFee < 0 || universityGraduation < 0 || master < 0 || doctorate < 0 || 
+                associateProfessor < 0 || professor < 0) {
+                setLoadingBtn(false)
+                setAlertData({
+                    severity: 'warning',
+                    message: 'Vui lòng không nhập số âm',
+                    open: true
+                })
+
+            }
+            else {
+                if (idTeacher) {
+                    await updateDocument('settingDataConfig', idTeacher, formData)
+                }
+                setSettingData(formData);
+                setOpen(false);
+                setLoadingBtn(false)
+                setAlertData({
+                    severity: 'success',
+                    message: 'Lưu thông tin thành công',
+                    open: true
+                })
+            }
+
+        } catch (error) {
             setOpen(false);
+            setLoadingBtn(false)
+            setAlertData({
+                severity: 'error',
+                message: 'Có ',
+                open: true
+            })
         }
     };
     const handleClose = (event, reason) => {
@@ -53,14 +111,24 @@ const SettingPage = ({ setSettingData }) => {
 
     return (
         <div>
+
+            <AlertMessage alertData={alertData} />
+
             <Dialog open={open} onClose={handleClose} className='dialog-setting'>
-                <DialogTitle>{archivedData ? "Bạn có muốn thay đổi dữ liệu trước đó không ?" : "Hãy thiết lập trước khi sử dụng phần mềm"}</DialogTitle>
+                <Backdrop
+                    sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                    open={loading}
+                >
+                    <CircularProgress color="inherit" />
+                </Backdrop>
+                <DialogTitle>{idTeacher ? "Bạn có muốn thay đổi dữ liệu trước đó không ?" : "Hãy thiết lập trước khi sử dụng phần mềm"}</DialogTitle>
                 <DialogContent>
                     <h4>1. Thiết lập tiền dạy một giờ chuẩn</h4>
                     <TextField
                         name="tuitionFee"
                         value={formData.tuitionFee}
                         required
+
                         id="outlined-password-input"
                         onChange={handleInputChange}
                         label="Tiền dạy"
@@ -146,9 +214,16 @@ const SettingPage = ({ setSettingData }) => {
 
                 </DialogContent>
                 <DialogActions>
-                    {archivedData ?
+                    {idTeacher ?
                         <div>
-                            <Button onClick={handleSubmit}>Thay đổi</Button>
+                            <LoadingButton
+                                onClick={handleSubmit}
+                                loading={loadingBtn}
+                                loadingIndicator="Loading…"
+                                variant="outlined"
+                            >
+                                <span>Thay đổi</span>
+                            </LoadingButton>
                             <Button onClick={handleClose}>Thoát</Button>
                         </div>
                         : <Button onClick={handleSubmit}>Lưu</Button>}
