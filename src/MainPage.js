@@ -192,8 +192,14 @@ const MainPage = ({ settingData }) => {
         try {
             setloadingBtnClass(true)
             const { nameClass, numberStudent, coefficientLesson, numberLesson } = classInfo
-            if (nameClass === '' || numberStudent === '' || coefficientLesson === '' || numberLesson === '') {
-                alert('Vui lòng nhập đầy đủ thông tin')
+            if (nameClass === '' || numberStudent === '' || coefficientLesson === '' || 
+            numberLesson === '') {
+                setloadingBtnClass(false)
+                setAlertData({
+                    severity: 'warning',
+                    message: 'Vui lòng nhập đầy đủ thông tin',
+                    open: true
+                })
             } else if (!idTeacher) {
                 setloadingBtnClass(false)
                 setAlertData({
@@ -210,8 +216,8 @@ const MainPage = ({ settingData }) => {
                 })
             }
             else {
-                let tuitionFeeClass = parseFloat(numberLesson) * (parseFloat(coefficientTeacher) + parseFloat(coefficientClass) +
-                    parseFloat(coefficientLesson)) * parseFloat(settingDataConfig.tuitionFee)
+                let tuitionFeeClass = parseFloat(numberLesson) * (parseFloat(coefficientTeacher)+parseFloat(coefficientClass) + 
+                parseFloat(coefficientLesson)) * parseFloat(settingDataConfig.tuitionFee)
                 let newRow = {
                     id: rowsData.length + 1,
                     nameClass,
